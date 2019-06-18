@@ -17,16 +17,17 @@ pub struct User {
 
 #[derive(Insertable, Debug)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
-  pub email: &'a str,
-  pub password_digest: &'a str
+pub struct NewUser {
+  pub email: String,
+  pub password_digest: String
 }
 
-impl<'a> NewUser<'a> {
-  pub fn create(email: &'a str, password: &'a str) -> Result<Self, failure::Error> {
+impl NewUser {
+  pub fn create<S>(email: S, password: S) -> Result<Self, failure::Error> 
+    where S: Into<String> {
     Ok(NewUser{
-      email: email,
-      password_digest: &hash(password)?
+      email: email.into(),
+      password_digest: hash(&password.into())?
     })
   }
 }
@@ -43,11 +44,10 @@ fn secret() -> Result<String, failure::Error> {
 /// 
 /// # Arguments
 /// * `password` - The password to hash.
-fn hash<S>(password: S) -> Result<String, failure::Error>
-  where S: Into<String> {
+fn hash<'a>(password: &'a str) -> Result<String, failure::Error> {
   Ok(Hasher::default()
     .with_secret_key(secret()?)
-    .with_password(password.into())
+    .with_password(password)
     .hash()?)
 }
 
