@@ -9,10 +9,10 @@ use crate::db::users;
 pub struct User {
   pub id: i32,
   pub uuid: uuid::Uuid,
-  email: String,
-  password_digest: String,
-  created_at: NaiveDateTime,
-  updated_at: NaiveDateTime
+  pub email: String,
+  pub password_digest: String,
+  pub created_at: NaiveDateTime,
+  pub updated_at: NaiveDateTime
 }
 
 #[derive(Insertable, Debug)]
