@@ -1,0 +1,8 @@
+inbound_listener:
+  address: 'localhost:9000'
+
+database:
+  name: rust_mvc
+  host: localhost
+  username: nate
+  password: magical1

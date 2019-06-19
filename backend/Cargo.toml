@@ -1,11 +1,20 @@
 [package]
 name = "backend"
+description = "Example Backend Service"
 version = "0.1.0"
+readme  = "README.md"
 authors = ["Nate Strandberg <nater540@gmail.com>"]
 edition = "2018"
+workspace = "../"
+
+[[bin]]
+name = "backend"
+path = "src/main.rs"
+doc  = false
 
 [dependencies]
 actix-web = { version = "1.0.2", features = ["ssl"] }
+actix-cors = "0.1.0"
 actix-rt = "0.2"
 diesel = { version = "1.4.2", features = ["postgres", "r2d2", "serde_json", "uuid", "chrono"] }
 r2d2 = "0.8"
@@ -22,6 +31,7 @@ config = "0.9.3"
 failure = "0.1.5"
 openssl = "0.10"
 juniper = { git = "https://github.com/graphql-rust/juniper.git", features = ["uuid", "chrono"] }
+lazy_static = "1.3.0"
 
 # Logging
 log  = "0.4.6"

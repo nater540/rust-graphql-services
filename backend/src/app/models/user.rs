@@ -1,7 +1,8 @@
-use diesel::prelude::*;
+// use diesel::prelude::*;
+use argonautica::{Hasher};
 use chrono::prelude::*;
-use argonautica::{Hasher, Verifier};
-use serde::{Serialize, Deserialize};
+use diesel::pg::PgConnection;
+use serde::{Serialize};
 
 use crate::db::users;
 
@@ -23,12 +24,23 @@ pub struct NewUser {
 }
 
 impl NewUser {
-  pub fn create<S>(email: S, password: S) -> Result<Self, failure::Error> 
+  pub fn create<S>(email: S, password: S, connection: &PgConnection) -> Result<Self, failure::Error> 
     where S: Into<String> {
-    Ok(NewUser{
-      email: email.into(),
-      password_digest: hash(&password.into())?
-    })
+    use diesel::RunQueryDsl;
+
+    Ok(
+      diesel::insert_into(users::table)
+        .values(NewUser{
+          email: email.into(),
+          password_digest: hash(&password.into())?
+        })
+        .get_result(connection)?
+    )
+
+    // Ok(NewUser{
+    //   email: email.into(),
+    //   password_digest: hash(&password.into())?
+    // })
   }
 }
 
@@ -36,7 +48,7 @@ impl NewUser {
 fn secret() -> Result<String, failure::Error> {
   match std::env::var("HEIMDALLR_SECRET") {
     Ok(val)  => Ok(val),
-    Err(err) => panic!("TODO")
+    Err(_err) => panic!("TODO")
   }
 }
 
