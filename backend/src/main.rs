@@ -63,25 +63,9 @@ lazy_static! {
   static ref APP_SETTINGS: Settings = Settings::new();
 }
 
-// use crate::app::graphql::{Schema, create_schema};
-
-// fn graphql(st: web::Data<Arc<Schema>>, data: web::Json<GraphQLRequest>) -> impl Future<Item = HttpResponse, Error = Error> {
-//   web::block(move || {
-//     let res = data.execute(&st, &());
-//     Ok::<_, serde_json::error::Error>(serde_json::to_string(&res)?)
-//   })
-//   .map_err(Error::from)
-//   .and_then(|user| {
-//     Ok(HttpResponse::Ok()
-//       .content_type("application/json")
-//       .body(user)
-//     )
-//   })
-// }
-
 fn main() {
-  if let Err(ref err) = run() {
-    use std::io::Write;
+  if let Err(ref _err) = run() {
+    // use std::io::Write;
 
     // let stderr = &mut std::io::stderr();
     // let errmsg = "Error writing to stderr";
@@ -99,20 +83,13 @@ fn main() {
   }
 }
 
-use crate::app::models::NewUser;
-use crate::db::Database;
-
 fn run() -> Result<(), failure::Error> {
   // Ensure all statics are valid
   let (_, _) = (APP_ARGS.deref(), APP_SETTINGS.deref());
 
   logging::init().expect("Failed to initialize logging.");
 
-  let db = Database::new()?;
-  let user = NewUser::create("nater540@gmail.com", "kitty", &*db.pool.get()?)?;
-  debug!("{:?}", user);
-
-  // let server = server::Server::new()?;
-  // server.run()?;
+  let server = server::Server::new()?;
+  server.run()?;
   Ok(())
 }

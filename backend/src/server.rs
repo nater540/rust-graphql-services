@@ -5,6 +5,8 @@ use actix_cors::Cors;
 use crate::APP_SETTINGS;
 use crate::db::Database;
 
+use crate::app::graphql::{Schema, create_schema};
+
 pub struct Server {
   pub sys: actix_rt::SystemRunner
 }
@@ -13,21 +15,32 @@ impl Server {
   /// Creates a new instance of the HTTP server.
   pub fn new() -> Result<Self, failure::Error> {
     let sys = actix_rt::System::new("backend");
-    let db  = Database::new()?;
+
+    // Initialize a pool of database connections
+    let db = Database::new()?;
+
+    // Create the GraphQL schema
+    let schema = std::sync::Arc::new(create_schema());
 
     let server = HttpServer::new(move || {
       App::new()
         .data(db.clone())
+        .data(schema.clone())
         .wrap(Logger::default())
-        .wrap(
-          Cors::new()
-            .allowed_origin("http://localhost:8080")
-            .allowed_methods(vec!["POST"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
-            .allowed_header(header::CONTENT_TYPE)
-            .max_age(3600)
+        // .wrap(
+        //   Cors::new()
+        //     .allowed_origin("*")
+        //     .allowed_methods(vec!["POST"])
+        //     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+        //     .allowed_header(header::CONTENT_TYPE)
+        //     .max_age(3600)
+        // )
+        .service(
+          web::resource("/graphql")
+            .route(
+              web::post().to_async(crate::app::controllers::graphql_controller::handler)
+            )
         )
-
     });
 
     if let (Some(private_key), Some(cert)) = (&APP_SETTINGS.inbound_listener.private_key, &APP_SETTINGS.inbound_listener.cert) {

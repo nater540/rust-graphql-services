@@ -23,24 +23,35 @@ pub struct NewUser {
   pub password_digest: String
 }
 
+impl User {
+  pub fn update(self, _connection: &PgConnection) -> Result<(), failure::Error> {
+    Ok(())
+  }
+}
+
 impl NewUser {
   pub fn create<S>(email: S, password: S, connection: &PgConnection) -> Result<User, failure::Error> 
     where S: Into<String> {
     use diesel::RunQueryDsl;
 
-    Ok(
-      diesel::insert_into(users::table)
-        .values(NewUser{
-          email: email.into(),
-          password_digest: hash(&password.into())?
-        })
-        .get_result(connection)?
+    Ok(diesel::insert_into(users::table)
+      .values(NewUser{
+        email: email.into(),
+        password_digest: Self::hash_password(&password.into())?
+      })
+      .get_result(connection)?
     )
+  }
 
-    // Ok(NewUser{
-    //   email: email.into(),
-    //   password_digest: hash(&password.into())?
-    // })
+  /// Hashes a password.
+  /// 
+  /// # Arguments
+  /// * `password` - The password to hash.
+  fn hash_password<'a>(password: &'a str) -> Result<String, failure::Error> {
+    Ok(Hasher::default()
+      .with_secret_key(secret()?)
+      .with_password(password)
+      .hash()?)
   }
 }
 
@@ -51,16 +62,3 @@ fn secret() -> Result<String, failure::Error> {
     Err(_err) => panic!("TODO")
   }
 }
-
-/// Hashes a password.
-/// 
-/// # Arguments
-/// * `password` - The password to hash.
-fn hash<'a>(password: &'a str) -> Result<String, failure::Error> {
-  Ok(Hasher::default()
-    .with_secret_key(secret()?)
-    .with_password(password)
-    .hash()?)
-}
-
-// argonautica::error::Error
