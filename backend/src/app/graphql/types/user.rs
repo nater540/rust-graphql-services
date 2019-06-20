@@ -4,7 +4,7 @@ use crate::app::models::User as DBUser;
 #[graphql(description = "User object")]
 pub struct User {
   pub id: i32,
-  pub uuid: uuid::Uuid,
+  pub uuid: String,
   pub email: String,
   pub created_at: String,
   pub updated_at: String

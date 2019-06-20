@@ -16,7 +16,7 @@ doc  = false
 actix-web = { version = "1.0.2", features = ["ssl"] }
 actix-cors = "0.1.0"
 actix-rt = "0.2"
-diesel = { version = "1.4.2", features = ["postgres", "r2d2", "serde_json", "uuid", "chrono"] }
+diesel = { version = "1.4.2", features = ["postgres", "r2d2", "serde_json", "chrono"] }
 r2d2 = "0.8"
 dotenv = "0.14.1"
 futures = "0.1.27"

@@ -99,13 +99,20 @@ fn main() {
   }
 }
 
+use crate::app::models::NewUser;
+use crate::db::Database;
+
 fn run() -> Result<(), failure::Error> {
   // Ensure all statics are valid
   let (_, _) = (APP_ARGS.deref(), APP_SETTINGS.deref());
 
   logging::init().expect("Failed to initialize logging.");
 
-  let server = server::Server::new()?;
-  server.run()?;
+  let db = Database::new()?;
+  let user = NewUser::create("nater540@gmail.com", "kitty", &*db.pool.get()?)?;
+  debug!("{:?}", user);
+
+  // let server = server::Server::new()?;
+  // server.run()?;
   Ok(())
 }

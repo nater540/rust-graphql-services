@@ -3,7 +3,7 @@ table! {
 
     users (id) {
         id -> Int4,
-        uuid -> Uuid,
+        uuid -> Varchar,
         email -> Varchar,
         password_digest -> Varchar,
         created_at -> Timestamp,

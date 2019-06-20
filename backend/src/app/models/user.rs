@@ -6,10 +6,10 @@ use serde::{Serialize};
 
 use crate::db::users;
 
-#[derive(Serialize, Queryable, Debug)]
+#[derive(Serialize, Queryable, PartialEq, Debug)]
 pub struct User {
   pub id: i32,
-  pub uuid: uuid::Uuid,
+  pub uuid: String,
   pub email: String,
   pub password_digest: String,
   pub created_at: NaiveDateTime,
@@ -24,7 +24,7 @@ pub struct NewUser {
 }
 
 impl NewUser {
-  pub fn create<S>(email: S, password: S, connection: &PgConnection) -> Result<Self, failure::Error> 
+  pub fn create<S>(email: S, password: S, connection: &PgConnection) -> Result<User, failure::Error> 
     where S: Into<String> {
     use diesel::RunQueryDsl;
 
