@@ -1,12 +1,14 @@
 // use diesel::prelude::*;
 use argonautica::{Hasher};
 use chrono::prelude::*;
+use diesel::{ExpressionMethods, RunQueryDsl, QueryDsl};
 use diesel::pg::PgConnection;
+use diesel::prelude::*;
 use serde::{Serialize};
 
 use crate::db::users;
 
-#[derive(Serialize, Queryable, PartialEq, Debug)]
+#[derive(Serialize, Queryable, Identifiable, PartialEq, Debug)]
 pub struct User {
   pub id: i32,
   pub uuid: String,
@@ -16,6 +18,16 @@ pub struct User {
   pub updated_at: NaiveDateTime
 }
 
+impl User {
+  pub fn by_uuid(uuid: &str, connection: &PgConnection) -> QueryResult<User> {
+    let results = users::table.filter(users::uuid.eq(uuid)).limit(1).load::<User>(connection);
+  }
+
+  pub fn update(self, _connection: &PgConnection) -> Result<(), failure::Error> {
+    Ok(())
+  }
+}
+
 #[derive(Insertable, Debug)]
 #[table_name = "users"]
 pub struct NewUser {
@@ -23,17 +35,9 @@ pub struct NewUser {
   pub password_digest: String
 }
 
-impl User {
-  pub fn update(self, _connection: &PgConnection) -> Result<(), failure::Error> {
-    Ok(())
-  }
-}
-
 impl NewUser {
   pub fn create<S>(email: S, password: S, connection: &PgConnection) -> Result<User, failure::Error> 
     where S: Into<String> {
-    use diesel::RunQueryDsl;
-
     Ok(diesel::insert_into(users::table)
       .values(NewUser{
         email: email.into(),

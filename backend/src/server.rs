@@ -1,11 +1,11 @@
 use openssl::ssl::{SslMethod, SslAcceptor, SslAcceptorBuilder, SslFiletype};
-use actix_web::{http::header, middleware::Logger, App, HttpServer, web};
-use actix_cors::Cors;
+use actix_web::{/*http::header, */middleware::Logger, App, HttpServer, web};
+// use actix_cors::Cors;
 
 use crate::APP_SETTINGS;
 use crate::db::Database;
 
-use crate::app::graphql::{Schema, create_schema};
+use crate::app::graphql::create_schema;
 
 pub struct Server {
   pub sys: actix_rt::SystemRunner
@@ -38,7 +38,7 @@ impl Server {
         .service(
           web::resource("/graphql")
             .route(
-              web::post().to_async(crate::app::controllers::graphql_controller::handler)
+              web::post().to_async(crate::app::controllers::graphql::handler)
             )
         )
     });

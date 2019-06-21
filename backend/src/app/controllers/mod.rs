@@ -1,1 +1,1 @@
-pub mod graphql_controller;
+pub mod graphql;

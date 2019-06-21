@@ -1,16 +1,21 @@
 
-use juniper::FieldResult;
-use juniper::RootNode;
+use juniper::{Context, FieldResult, RootNode};
 
 use super::types::User;
+use crate::db::Database;
 
-pub struct QueryRoot;
-pub struct MutationRoot;
+// Allows you to use the database pool in GraphQL resolvers.
+impl Context for Database {}
 
-pub type Schema = RootNode<'static, QueryRoot, MutationRoot>;
+pub struct Query;
+pub struct Mutation;
 
-graphql_object!(QueryRoot: () |&self| {
-  field getUser(&executor, id: String) -> FieldResult<User> {
+pub type Schema = RootNode<'static, Query, Mutation>;
+
+#[juniper::object(Context = Database)]
+impl Query {
+  fn getUser(context: &Database, uuid: String) -> FieldResult<User> {
+    
     Ok(User{
       id: 42,
       uuid: "".to_owned(),
@@ -19,11 +24,13 @@ graphql_object!(QueryRoot: () |&self| {
       updated_at: chrono::Utc::now().to_rfc3339()
     })
   }
-});
+}
 
-graphql_object!(MutationRoot: () |&self| {
-});
+#[juniper::object(Context = Database)]
+impl Mutation {
+
+}
 
 pub fn create_schema() -> Schema {
-  Schema::new(QueryRoot {}, MutationRoot {})
+  Schema::new(Query {}, Mutation {})
 }
