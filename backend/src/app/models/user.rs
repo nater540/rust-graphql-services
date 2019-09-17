@@ -1,17 +1,18 @@
-// use diesel::prelude::*;
 use argonautica::{Hasher};
 use chrono::prelude::*;
-use diesel::{ExpressionMethods, RunQueryDsl, QueryDsl};
-use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use diesel::{pg::PgConnection, ExpressionMethods, RunQueryDsl, QueryDsl};
 use serde::{Serialize};
 
 use crate::db::users;
 
+/// Default secret to use when the environment variable doesn't exist [much better than just using `panic!` :P]
+static DEFAULT_SECRET_HASH: &str = "44f5af520ce6154f624c4e08e21d1c4c37e82612f74674ff4bd13ee11a9ef775";
+
 #[derive(Serialize, Queryable, Identifiable, PartialEq, Debug)]
 pub struct User {
   pub id: i32,
-  pub uuid: String,
+  pub uuid: uuid::Uuid,
   pub email: String,
   pub password_digest: String,
   pub created_at: NaiveDateTime,
@@ -19,8 +20,11 @@ pub struct User {
 }
 
 impl User {
-  pub fn by_uuid(uuid: &str, connection: &PgConnection) -> QueryResult<User> {
-    let results = users::table.filter(users::uuid.eq(uuid)).limit(1).load::<User>(connection);
+  pub fn by_uuid(uuid: &uuid::Uuid, connection: &PgConnection) -> QueryResult<User> {
+    users::table.filter(users::uuid.eq(uuid)).limit(1).first(&*connection)
+    // let query = users::table.filter(users::uuid.eq(uuid)).limit(1);
+    // info!("########## QUERY = {}", diesel::debug_query(&query));
+    // query.first(&*connection)
   }
 
   pub fn update(self, _connection: &PgConnection) -> Result<(), failure::Error> {
@@ -53,16 +57,19 @@ impl NewUser {
   /// * `password` - The password to hash.
   fn hash_password<'a>(password: &'a str) -> Result<String, failure::Error> {
     Ok(Hasher::default()
-      .with_secret_key(secret()?)
+      .with_secret_key(get_secret()?)
       .with_password(password)
       .hash()?)
   }
 }
 
-/// Gets the password secret hash from an environment variable.
-fn secret() -> Result<String, failure::Error> {
+/// Gets the password secret from an environment variable.
+fn get_secret() -> Result<String, failure::Error> {
   match std::env::var("HEIMDALLR_SECRET") {
     Ok(val)  => Ok(val),
-    Err(_err) => panic!("TODO")
+    Err(_) => {
+      warn!("Missing ENV[\"HEIMDALLR_SECRET\"] - Using default secret hash `{}`", DEFAULT_SECRET_HASH);
+      Ok(DEFAULT_SECRET_HASH.to_string())
+    }
   }
 }

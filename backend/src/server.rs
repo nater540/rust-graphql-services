@@ -1,6 +1,6 @@
 use openssl::ssl::{SslMethod, SslAcceptor, SslAcceptorBuilder, SslFiletype};
-use actix_web::{/*http::header, */middleware::Logger, App, HttpServer, web};
-// use actix_cors::Cors;
+use actix_web::{http::header, middleware::Logger, App, HttpServer, web};
+use actix_cors::Cors;
 
 use crate::APP_SETTINGS;
 use crate::db::Database;
@@ -30,7 +30,7 @@ impl Server {
         // .wrap(
         //   Cors::new()
         //     .allowed_origin("*")
-        //     .allowed_methods(vec!["POST"])
+        //     .allowed_methods(vec!["POST", "OPTIONS"])
         //     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
         //     .allowed_header(header::CONTENT_TYPE)
         //     .max_age(3600)

@@ -3,6 +3,7 @@ use juniper::{Context, FieldResult, RootNode};
 
 use super::types::User;
 use crate::db::Database;
+use crate::app::models::User as DBUser;
 
 // Allows you to use the database pool in GraphQL resolvers.
 impl Context for Database {}
@@ -14,15 +15,12 @@ pub type Schema = RootNode<'static, Query, Mutation>;
 
 #[juniper::object(Context = Database)]
 impl Query {
-  fn getUser(context: &Database, uuid: String) -> FieldResult<User> {
-    
-    Ok(User{
-      id: 42,
-      uuid: "".to_owned(),
-      email: "nater540@gmail.com".to_owned(),
-      created_at: chrono::Utc::now().to_rfc3339(),
-      updated_at: chrono::Utc::now().to_rfc3339()
-    })
+  fn getUser(db: &Database, uuid: uuid::Uuid) -> FieldResult<User> {
+    debug!("########## getUser {}", uuid);
+    let user = DBUser::by_uuid(&uuid, &*db.pool.get()?)?;
+    debug!("{:?}", user);
+
+    Ok(user.into())
   }
 }
 
